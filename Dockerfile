@@ -65,7 +65,7 @@ WORKDIR /data
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]
 
-COPY redis.conf /usr/local/bin/redis.conf
-
+COPY redis.conf /data/redis.conf
+RUN chown -R redis:redis /data
 EXPOSE 6379
-CMD [ "redis-server", "/usr/local/bin/redis.conf" ]
+CMD [ "redis-server", "/data/redis.conf" ]
