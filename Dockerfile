@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 FROM alpine:3.9
 
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
@@ -9,40 +8,6 @@ RUN apk add --no-cache \
 		'su-exec>=0.2' \
 # add tzdata for https://github.com/docker-library/redis/issues/138
 		tzdata
-=======
-FROM debian:stretch-slim
-
-# add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
-RUN groupadd -r redis && useradd -r -g redis redis
-
-# grab gosu for easy step-down from root
-# https://github.com/tianon/gosu/releases
-ENV GOSU_VERSION 1.10
-RUN set -ex; \
-	\
-	fetchDeps=" \
-		ca-certificates \
-		dirmngr \
-		gnupg \
-		wget \
-	"; \
-	apt-get update; \
-	apt-get install -y --no-install-recommends $fetchDeps; \
-	rm -rf /var/lib/apt/lists/*; \
-	\
-	dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
-	wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch"; \
-	wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
-	export GNUPGHOME="$(mktemp -d)"; \
-	gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
-	gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
-	gpgconf --kill all; \
-	rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc; \
-	chmod +x /usr/local/bin/gosu; \
-	gosu nobody true; \
-	\
-	apt-get purge -y --auto-remove $fetchDeps
->>>>>>> origin/master
 
 ENV REDIS_VERSION 5.0.5
 ENV REDIS_DOWNLOAD_URL http://download.redis.io/releases/redis-5.0.5.tar.gz
@@ -51,7 +16,6 @@ ENV REDIS_DOWNLOAD_SHA 2139009799d21d8ff94fc40b7f36ac46699b9e1254086299f8d3b223c
 # for redis-sentinel see: http://redis.io/topics/sentinel
 RUN set -ex; \
 	\
-<<<<<<< HEAD
 	apk add --no-cache --virtual .build-deps \
 		coreutils \
 		gcc \
@@ -59,19 +23,6 @@ RUN set -ex; \
 		make \
 		musl-dev \
 	; \
-=======
-	buildDeps=' \
-		ca-certificates \
-		wget \
-		\
-		gcc \
-		libc6-dev \
-		make \
-	'; \
-	apt-get update; \
-	apt-get install -y $buildDeps --no-install-recommends; \
-	rm -rf /var/lib/apt/lists/*; \
->>>>>>> origin/master
 	\
 	wget -O redis.tar.gz "$REDIS_DOWNLOAD_URL"; \
 	echo "$REDIS_DOWNLOAD_SHA *redis.tar.gz" | sha256sum -c -; \
@@ -94,7 +45,6 @@ RUN set -ex; \
 	\
 	rm -r /usr/src/redis; \
 	\
-<<<<<<< HEAD
 	runDeps="$( \
 		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local \
 			| tr ',' '\n' \
@@ -106,25 +56,16 @@ RUN set -ex; \
 	\
 	redis-server --version
 
-RUN mkdir /data && chown redis:redis /data && cp /usr/share/zoneinfo/Asia/Ho_Chi_Minh /etc/localtime && echo "Asia/Ho_Chi_Minh" > /etc/timezone
-=======
-	apt-get purge -y --auto-remove $buildDeps
-
-RUN mkdir /data && chown redis:redis /data
->>>>>>> origin/master
-VOLUME /data
+RUN mkdir /data && chown redis:redis /data \
+        && cp /usr/share/zoneinfo/Asia/Ho_Chi_Minh /etc/localtime \
+        && echo "Asia/Ho_Chi_Minh" > /etc/timezone
+VOLUME /data 
 WORKDIR /data
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]
-<<<<<<< HEAD
-COPY redis.conf /usr/local/bin/redis.conf
 
+COPY redis.conf /usr/local/bin/redis.conf
 
 EXPOSE 6379
 CMD [ "redis-server", "/usr/local/bin/redis.conf" ]
-=======
-
-EXPOSE 6379
-CMD ["redis-server"]
->>>>>>> origin/master
